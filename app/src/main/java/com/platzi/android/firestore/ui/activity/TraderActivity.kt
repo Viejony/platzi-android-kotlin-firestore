@@ -4,7 +4,9 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
 import com.platzi.android.firestore.R
-import kotlinx.android.synthetic.main.activity_trader.*
+import com.platzi.android.firestore.databinding.ActivityTraderBinding
+
+//import kotlinx.android.synthetic.main.activity_trader.*
 
 
 /**
@@ -13,12 +15,14 @@ import kotlinx.android.synthetic.main.activity_trader.*
  */
 class TraderActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityTraderBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_trader)
+        binding = ActivityTraderBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        fab.setOnClickListener { view ->
+        binding.fab.setOnClickListener { view ->
             Snackbar.make(view, getString(R.string.generating_new_cryptos), Snackbar.LENGTH_SHORT)
                 .setAction("Info", null).show()
         }
@@ -26,7 +30,7 @@ class TraderActivity : AppCompatActivity() {
     }
 
     fun showGeneralServerErrorMessage() {
-        Snackbar.make(fab, getString(R.string.error_while_connecting_to_the_server), Snackbar.LENGTH_LONG)
+        Snackbar.make(binding.fab, getString(R.string.error_while_connecting_to_the_server), Snackbar.LENGTH_LONG)
             .setAction("Info", null).show()
     }
 }
