@@ -43,16 +43,39 @@ class LoginActivity : AppCompatActivity() {
     fun onStartClicked(view: View) {
         Utils().printLog("$TAG: onStartClicked")
         view.isEnabled = false
+
+        // Using Firestore auth
         auth.signInAnonymously()
             .addOnCompleteListener { task ->
                 Utils().printLog("$TAG: onStartClicked: task = $task")
+
+                // Successful task: now lets to check the user
                 if (task.isSuccessful) {
                     val username = binding.username.text.toString()
-                    val user: User = User()
-                    user.username = username
-                    Utils().printLog("$TAG: onStartClicked: isSuccessful, username = $username")
-                    saveUserAndStartActivity(user, view)
-                } else {
+
+                    firestoreService.findUserByID(username, object: Callback<User>{
+
+                        override fun onSuccess(result: User?) {
+                            // User don't exists in Firestore and will be added
+                            if(result == null){
+                                val userDocument = User()
+                                userDocument.username = username
+                                saveUserAndStartActivity(userDocument, view)
+                            }
+                            else{ // User already exists in Firestore
+                                startMainActivity(username)
+                            }
+                        }
+
+                        override fun onFailed(exception: Exception) {
+                            showErrorMessage(view)
+                            view.isEnabled = true
+                        }
+
+                    })  // End of callback
+
+                }
+                else {  // Error with task
                     Utils().printLog("$TAG: onStartClicked: is not successful")
                     showErrorMessage(view)
                     view.isEnabled = true
