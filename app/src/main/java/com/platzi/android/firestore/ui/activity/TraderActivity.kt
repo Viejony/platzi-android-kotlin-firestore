@@ -15,6 +15,7 @@ import com.platzi.android.firestore.databinding.CoinInfoBinding
 import com.platzi.android.firestore.model.User
 import com.platzi.android.firestore.network.Callback
 import com.platzi.android.firestore.network.FirestoreService
+import com.platzi.android.firestore.network.RealtimeDataListener
 import com.platzi.android.firestore.tools.Constants
 import com.platzi.android.firestore.ui.activity.tools.Utils
 import com.squareup.picasso.Picasso
@@ -27,6 +28,8 @@ import com.squareup.picasso.Picasso
  * 2/14/19.
  */
 class TraderActivity : AppCompatActivity(), CryptosAdapterListener {
+
+    private val TAG = TraderActivity::class.simpleName ?: ""
 
     private lateinit var binding: ActivityTraderBinding
 
@@ -55,7 +58,7 @@ class TraderActivity : AppCompatActivity(), CryptosAdapterListener {
     }
 
     private fun loadCryptos() {
-        Utils().printLog("loadCryptos")
+        Utils().printLog(TAG, "loadCryptos")
         firestoreService.getCryptos(object: Callback<List<Crypto>>{
 
             override fun onSuccess(cryptoList: List<Crypto>?) {
@@ -82,11 +85,13 @@ class TraderActivity : AppCompatActivity(), CryptosAdapterListener {
                             firestoreService.updateUser(user!!, null)
                         }
 
+                        Utils().printLog(TAG, "loadCryptos: cryptoList = ${user?.cryptoList ?: "NULL"}")
                         loadUserCryptos()
+                        addRealtimeDatabaseListener(user!!, cryptoList!!)
                     }
 
                     override fun onFailed(exception: Exception) {
-                        TODO("Not yet implemented")
+                        showGeneralServerErrorMessage()
                     }
                 })
 
@@ -105,11 +110,46 @@ class TraderActivity : AppCompatActivity(), CryptosAdapterListener {
         })
     }
 
+    private fun addRealtimeDatabaseListener(user: User, cryptosList: List<Crypto>) {
+        firestoreService.listenForUpdates(user, object: RealtimeDataListener<User>{
+            override fun onDataChange(updateData: User) {
+                this@TraderActivity.user = updateData
+                loadUserCryptos()
+            }
+
+            override fun onError(exception: java.lang.Exception) {
+                showGeneralServerErrorMessage()
+            }
+
+        })
+
+        firestoreService.listenForUpdate(cryptosList, object: RealtimeDataListener<Crypto>{
+            override fun onDataChange(updateData: Crypto) {
+                var position = 0
+                for(crypto in cryptosAdapter.cryptosList){
+                    if(crypto.name == updateData.name){
+                        crypto.available = updateData.available
+                        cryptosAdapter.notifyItemChanged(position)
+                    }
+                    position ++
+                }
+            }
+
+            override fun onError(exception: java.lang.Exception) {
+                showGeneralServerErrorMessage()
+            }
+
+        })
+    }
+
+
     private fun loadUserCryptos(){
-        if(user != null && user!!.cryptoList != null){
-            binding.infoPanel.removeAllViews()
-            for(crypto in user!!.cryptoList!!){
-                addUserCryptoInfoRow(crypto)
+        runOnUiThread{
+            if(user != null && user!!.cryptoList != null){
+                binding.infoPanel.removeAllViews()
+                for(crypto in user!!.cryptoList!!){
+                    addUserCryptoInfoRow(crypto)
+                }
             }
         }
     }
@@ -139,6 +179,16 @@ class TraderActivity : AppCompatActivity(), CryptosAdapterListener {
     }
 
     override fun onBuyCryptoClicked(crypto: Crypto) {
-
+        if(crypto.available > 0){
+            for(userCrypto in user!!.cryptoList!!){
+                if(userCrypto.name == crypto.name){
+                    userCrypto.available += 1
+                    break
+                }
+            }
+            crypto.available --
+            firestoreService.updateUser(user!!, null)
+            firestoreService.updateCrypto(crypto)
+        }
     }
 }

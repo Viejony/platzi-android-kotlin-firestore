@@ -21,7 +21,7 @@ class FirestoreService(val firebaseFirestore: FirebaseFirestore) {
         firebaseFirestore
             .collection(Constants.USERS_COLLECTION_NAME)
             .document(user.username)
-            .update("cryptosList", user.cryptoList)
+            .update("cryptoList", user.cryptoList)
             .addOnSuccessListener { result ->
                 callback?.onSuccess(user)
             }
@@ -47,6 +47,7 @@ class FirestoreService(val firebaseFirestore: FirebaseFirestore) {
                     val cryptoList = result.toObjects(Crypto::class.java)
                     Utils().printLog("getCryptos: onSuccess: document = ${document.data}")
                     callback?.onSuccess(cryptoList)
+                    break
                 }
             }
             .addOnFailureListener { exception ->
@@ -71,6 +72,32 @@ class FirestoreService(val firebaseFirestore: FirebaseFirestore) {
             .addOnFailureListener { exception ->
                 callback?.onFailed(exception)
             }
+    }
+
+    fun listenForUpdate(cryptos: List<Crypto>, listener: RealtimeDataListener<Crypto>){
+        val cryptoReference = firebaseFirestore.collection(Constants.CRYPTO_COLLECTION_NAME)
+        for(crypto in cryptos){
+            cryptoReference.document(crypto.getDocumentID()).addSnapshotListener { value, error ->
+                if(error != null){
+                    listener.onError(error)
+                }
+                if(value != null && value.exists()){
+                    listener.onDataChange(value.toObject(Crypto::class.java)!!)
+                }
+            }
+        }
+    }
+
+    fun listenForUpdates(user: User, listener: RealtimeDataListener<User>){
+        val usersReferecence = firebaseFirestore.collection(Constants.USERS_COLLECTION_NAME)
+        usersReferecence.document(user.username).addSnapshotListener { value, error ->
+            if(error != null){
+                listener.onError(error)
+            }
+            if(value != null && value.exists()){
+                listener.onDataChange(value.toObject(User::class.java)!!)
+            }
+        }
     }
 
 }

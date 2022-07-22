@@ -35,6 +35,7 @@ class CryptosAdapter(val cryptosAdapterListener: CryptosAdapterListener): Recycl
             nameTextView.text = crypto.name
             availableTextView.text = "${holder.context.getString(R.string.available_message)} ${crypto.available}"
             buyButton.setOnClickListener{
+                Utils().printLog(TAG, "onBindViewHolder: setOnClickListener: $crypto")
                 cryptosAdapterListener.onBuyCryptoClicked(crypto)
             }
         }
