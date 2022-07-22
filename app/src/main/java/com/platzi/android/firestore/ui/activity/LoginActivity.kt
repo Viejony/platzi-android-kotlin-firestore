@@ -12,7 +12,7 @@ import com.platzi.android.firestore.databinding.ActivityLoginBinding
 import com.platzi.android.firestore.model.User
 import com.platzi.android.firestore.network.Callback
 import com.platzi.android.firestore.network.FirestoreService
-import com.platzi.android.firestore.network.USERS_COLLECTION_NAME
+import com.platzi.android.firestore.tools.Constants
 import com.platzi.android.firestore.ui.activity.tools.Utils
 
 /**
@@ -20,9 +20,6 @@ import com.platzi.android.firestore.ui.activity.tools.Utils
  * github sancarbar
  * 1/29/19.
  */
-
-
-const val USERNAME_KEY = "username_key"
 
 class LoginActivity : AppCompatActivity() {
 
@@ -86,7 +83,7 @@ class LoginActivity : AppCompatActivity() {
     private fun saveUserAndStartActivity(user: User, view: View){
         firestoreService.setDocument(
             user,
-            USERS_COLLECTION_NAME,
+            Constants.USERS_COLLECTION_NAME,
             user.username,
             object: Callback<Void>{
                 override fun onSuccess(result: Void?) {
@@ -113,7 +110,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun startMainActivity(username: String) {
         val intent = Intent(this@LoginActivity, TraderActivity::class.java)
-        intent.putExtra(USERNAME_KEY, username)
+        intent.putExtra(Constants.USERNAME_KEY, username)
         startActivity(intent)
         finish()
     }

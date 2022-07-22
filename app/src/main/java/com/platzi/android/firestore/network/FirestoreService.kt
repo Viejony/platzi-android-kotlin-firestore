@@ -2,11 +2,9 @@ package com.platzi.android.firestore.network
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.platzi.android.firestore.model.User
+import com.platzi.android.firestore.tools.Constants
 import com.platzi.android.firestore.ui.activity.Crypto
 import com.platzi.android.firestore.ui.activity.tools.Utils
-
-const val CRYPTO_COLLECTION_NAME = "crypto"
-const val USERS_COLLECTION_NAME = "users"
 
 class FirestoreService(val firebaseFirestore: FirebaseFirestore) {
 
@@ -21,7 +19,7 @@ class FirestoreService(val firebaseFirestore: FirebaseFirestore) {
 
     fun updateUser(user: User, callback: Callback<User>?){
         firebaseFirestore
-            .collection(USERS_COLLECTION_NAME)
+            .collection(Constants.USERS_COLLECTION_NAME)
             .document(user.username)
             .update("cryptosList", user.cryptoList)
             .addOnSuccessListener { result ->
@@ -34,7 +32,7 @@ class FirestoreService(val firebaseFirestore: FirebaseFirestore) {
 
     fun updateCrypto(crypto: Crypto){
         firebaseFirestore
-            .collection(CRYPTO_COLLECTION_NAME)
+            .collection(Constants.CRYPTO_COLLECTION_NAME)
             .document(crypto.getDocumentID())
             .update("available", crypto.available)
     }
@@ -42,10 +40,9 @@ class FirestoreService(val firebaseFirestore: FirebaseFirestore) {
     fun getCryptos(callback: Callback<List<Crypto>>?){
         Utils().printLog("getCryptos")
         firebaseFirestore
-            .collection(CRYPTO_COLLECTION_NAME)
+            .collection(Constants.CRYPTO_COLLECTION_NAME)
             .get()
             .addOnSuccessListener { result ->
-                Utils().printLog("getCryptos: onSuccess: result = ${result}")
                 for(document in result){
                     val cryptoList = result.toObjects(Crypto::class.java)
                     Utils().printLog("getCryptos: onSuccess: document = ${document.data}")
@@ -60,7 +57,7 @@ class FirestoreService(val firebaseFirestore: FirebaseFirestore) {
 
     fun findUserByID(id: String, callback: Callback<User>?){
         firebaseFirestore
-            .collection(USERS_COLLECTION_NAME)
+            .collection(Constants.USERS_COLLECTION_NAME)
             .document(id)
             .get()
             .addOnSuccessListener { result ->

@@ -1,6 +1,8 @@
 package com.platzi.android.firestore.ui.activity
 
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
@@ -9,9 +11,13 @@ import com.platzi.android.firestore.R
 import com.platzi.android.firestore.adapter.CryptosAdapter
 import com.platzi.android.firestore.adapter.CryptosAdapterListener
 import com.platzi.android.firestore.databinding.ActivityTraderBinding
+import com.platzi.android.firestore.databinding.CoinInfoBinding
+import com.platzi.android.firestore.model.User
 import com.platzi.android.firestore.network.Callback
 import com.platzi.android.firestore.network.FirestoreService
+import com.platzi.android.firestore.tools.Constants
 import com.platzi.android.firestore.ui.activity.tools.Utils
+import com.squareup.picasso.Picasso
 
 //import kotlinx.android.synthetic.main.activity_trader.*
 
@@ -26,6 +32,8 @@ class TraderActivity : AppCompatActivity(), CryptosAdapterListener {
 
     lateinit var firestoreService: FirestoreService
     lateinit var cryptosAdapter: CryptosAdapter
+    private var username: String? = null
+    private var user: User? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +41,9 @@ class TraderActivity : AppCompatActivity(), CryptosAdapterListener {
         setContentView(binding.root)
 
         firestoreService = FirestoreService(FirebaseFirestore.getInstance())
+        username = intent.extras!![Constants.USERNAME_KEY].toString()
+        binding.usernameTextView.text = username
+
         setRecyclerView()
         loadCryptos()
 
@@ -47,9 +58,40 @@ class TraderActivity : AppCompatActivity(), CryptosAdapterListener {
         Utils().printLog("loadCryptos")
         firestoreService.getCryptos(object: Callback<List<Crypto>>{
 
-            override fun onSuccess(result: List<Crypto>?) {
-                cryptosAdapter.cryptosList = result!!
-                Utils().printLog("loadCryptos: onSuccess: ${result!!.toString()}")
+            override fun onSuccess(cryptoList: List<Crypto>?) {
+
+                // Get user cryptos
+                firestoreService.findUserByID(username!!, object: Callback<User>{
+
+                    override fun onSuccess(result: User?) {
+                        user = result
+                        if(user!!.cryptoList == null){
+                            var userCryptoList = mutableListOf<Crypto>()
+                            for(crypto in cryptoList!!){
+                                val cryptoUser = Crypto()
+                                cryptoUser.apply {
+                                    name = crypto.name
+                                    available = crypto.available
+                                    imageUrl = crypto.imageUrl
+                                    userCryptoList.add(cryptoUser)
+                                }
+                            }
+
+                            // Add list to database
+                            user!!.cryptoList = userCryptoList
+                            firestoreService.updateUser(user!!, null)
+                        }
+
+                        loadUserCryptos()
+                    }
+
+                    override fun onFailed(exception: Exception) {
+                        TODO("Not yet implemented")
+                    }
+                })
+
+                cryptosAdapter.cryptosList = cryptoList!!
+                Utils().printLog("loadCryptos: onSuccess: ${cryptoList!!.toString()}")
                 this@TraderActivity.runOnUiThread{
                     cryptosAdapter.notifyDataSetChanged()
                 }
@@ -57,10 +99,30 @@ class TraderActivity : AppCompatActivity(), CryptosAdapterListener {
 
             override fun onFailed(exception: Exception) {
                 Utils().printLog("loadCryptos: onFailed: ${exception}")
+                showGeneralServerErrorMessage()
             }
 
         })
     }
+
+    private fun loadUserCryptos(){
+        if(user != null && user!!.cryptoList != null){
+            binding.infoPanel.removeAllViews()
+            for(crypto in user!!.cryptoList!!){
+                addUserCryptoInfoRow(crypto)
+            }
+        }
+    }
+
+    private fun addUserCryptoInfoRow(crypto: Crypto) {
+        //val view = LayoutInflater.from(this).inflate(R.layout.coin_info, binding.infoPanel, false)
+        val coinBinding = CoinInfoBinding.inflate(layoutInflater)
+        coinBinding.coinLabel.text = getString(R.string.coin_info, crypto.name, crypto.available.toString())
+        Picasso.get().load(crypto.imageUrl).into(coinBinding.coinIcon)
+
+        binding.infoPanel.addView(coinBinding.root)
+    }
+
 
     private fun setRecyclerView() {
         cryptosAdapter = CryptosAdapter(this)
