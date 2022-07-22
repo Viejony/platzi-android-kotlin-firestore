@@ -4,10 +4,14 @@ import java.util.*
 
 class Crypto (
     var name: String = "",
-    var imagaUrl: String = "",
+    var imageUrl: String = "",
     var available: Int = 0
 ){
     fun getDocumentID(): String{
         return name.toLowerCase(Locale.ROOT)
+    }
+
+    override fun toString(): String {
+        return "{\"name\":\"${name}\", \"available\":\"${available}\", \"imageUrl\":\"${imageUrl}\"}"
     }
 }

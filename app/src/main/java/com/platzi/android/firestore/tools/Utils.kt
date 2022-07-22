@@ -6,8 +6,12 @@ import com.platzi.android.firestore.BuildConfig
 class Utils {
 
     fun printLog(log: String) {
+        printLog("PlatziFirestore", log)
+    }
+
+    fun printLog(tag: String, log: String) {
         if (BuildConfig.DEBUG) {
-            Log.e("SPACE: ", log)
+            Log.e(tag, log)
         }
     }
 

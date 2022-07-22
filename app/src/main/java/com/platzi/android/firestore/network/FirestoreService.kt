@@ -3,8 +3,9 @@ package com.platzi.android.firestore.network
 import com.google.firebase.firestore.FirebaseFirestore
 import com.platzi.android.firestore.model.User
 import com.platzi.android.firestore.ui.activity.Crypto
+import com.platzi.android.firestore.ui.activity.tools.Utils
 
-const val CRYPTO_COLLECTION_NAME = "cryptos"
+const val CRYPTO_COLLECTION_NAME = "crypto"
 const val USERS_COLLECTION_NAME = "users"
 
 class FirestoreService(val firebaseFirestore: FirebaseFirestore) {
@@ -39,16 +40,20 @@ class FirestoreService(val firebaseFirestore: FirebaseFirestore) {
     }
 
     fun getCryptos(callback: Callback<List<Crypto>>?){
+        Utils().printLog("getCryptos")
         firebaseFirestore
             .collection(CRYPTO_COLLECTION_NAME)
             .get()
             .addOnSuccessListener { result ->
+                Utils().printLog("getCryptos: onSuccess: result = ${result}")
                 for(document in result){
                     val cryptoList = result.toObjects(Crypto::class.java)
+                    Utils().printLog("getCryptos: onSuccess: document = ${document.data}")
                     callback?.onSuccess(cryptoList)
                 }
             }
             .addOnFailureListener { exception ->
+                Utils().printLog("getCryptos: onFailure")
                 callback?.onFailed(exception)
             }
     }

@@ -7,11 +7,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.platzi.android.firestore.R
 import com.platzi.android.firestore.databinding.CryptoRowBinding
 import com.platzi.android.firestore.ui.activity.Crypto
+import com.platzi.android.firestore.ui.activity.tools.Utils
 import com.squareup.picasso.Picasso
 
 class CryptosAdapter(val cryptosAdapterListener: CryptosAdapterListener): RecyclerView.Adapter<CryptosAdapter.ViewHolder>() {
 
-    private var cryptosList: List<Crypto> = ArrayList()
+    val TAG = CryptosAdapter::class.simpleName ?: ""
+    var cryptosList: List<Crypto> = ArrayList()
 
     inner class ViewHolder(val itemBinding: CryptoRowBinding, val context: Context): RecyclerView.ViewHolder(itemBinding.root)
 
@@ -26,16 +28,16 @@ class CryptosAdapter(val cryptosAdapterListener: CryptosAdapterListener): Recycl
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val crypto = cryptosList[position]
+        Utils().printLog(TAG, "onBindViewHolder: ${crypto.toString()}")
 
         holder.itemBinding.apply {
-            Picasso.get().load(crypto.imagaUrl).into(image)
+            Picasso.get().load(crypto.imageUrl).into(image)
             nameTextView.text = crypto.name
-            availableTextView.text = "${holder.context.getString(R.string.available_message)} $crypto.available"
+            availableTextView.text = "${holder.context.getString(R.string.available_message)} ${crypto.available}"
             buyButton.setOnClickListener{
                 cryptosAdapterListener.onBuyCryptoClicked(crypto)
             }
         }
-
 
     }
 

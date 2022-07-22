@@ -39,6 +39,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:ems="10"
+        android:text="Carlos"
         android:hint="@string/username"
         android:inputType="textPersonName"
         android:padding="20dp"
