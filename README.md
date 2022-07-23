@@ -23,3 +23,6 @@ This Android/Kotlin app was forked from another github project. Uses Firebase se
 
 ## License
 MIT
+
+## About the author
+*[Jhonyfer's blog](https://viejony.github.io/blog/en)*
