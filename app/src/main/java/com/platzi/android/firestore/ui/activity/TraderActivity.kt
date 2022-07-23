@@ -53,8 +53,17 @@ class TraderActivity : AppCompatActivity(), CryptosAdapterListener {
         binding.fab.setOnClickListener { view ->
             Snackbar.make(view, getString(R.string.generating_new_cryptos), Snackbar.LENGTH_SHORT)
                 .setAction("Info", null).show()
+            generateCryptoCurrenciesRandom()
         }
 
+    }
+
+    private fun generateCryptoCurrenciesRandom(){
+        for(crypto in cryptosAdapter.cryptosList){
+            val amount = (1..100).random()
+            crypto.available += amount
+            firestoreService.updateCrypto(crypto)
+        }
     }
 
     private fun loadCryptos() {
