@@ -21,7 +21,7 @@ class FirestoreService(val firebaseFirestore: FirebaseFirestore) {
         firebaseFirestore
             .collection(Constants.USERS_COLLECTION_NAME)
             .document(user.username)
-            .update("cryptoList", user.cryptoList)
+            .update(Constants.USER_CRYPTOSLIST_KEY, user.cryptosList)
             .addOnSuccessListener { result ->
                 callback?.onSuccess(user)
             }
@@ -44,9 +44,9 @@ class FirestoreService(val firebaseFirestore: FirebaseFirestore) {
             .get()
             .addOnSuccessListener { result ->
                 for(document in result){
-                    val cryptoList = result.toObjects(Crypto::class.java)
+                    val cryptosList = result.toObjects(Crypto::class.java)
                     Utils().printLog("getCryptos: onSuccess: document = ${document.data}")
-                    callback?.onSuccess(cryptoList)
+                    callback?.onSuccess(cryptosList)
                     break
                 }
             }

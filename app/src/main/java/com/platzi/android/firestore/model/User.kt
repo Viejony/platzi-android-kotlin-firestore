@@ -4,5 +4,5 @@ import com.platzi.android.firestore.ui.activity.Crypto
 
 data class User(
     var username: String = "",
-    var cryptoList: List<Crypto>? = null
+    var cryptosList: List<Crypto>? = null
 )

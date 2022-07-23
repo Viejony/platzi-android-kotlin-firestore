@@ -68,24 +68,24 @@ class TraderActivity : AppCompatActivity(), CryptosAdapterListener {
 
                     override fun onSuccess(result: User?) {
                         user = result
-                        if(user!!.cryptoList == null){
+                        if(user!!.cryptosList == null){
                             var userCryptoList = mutableListOf<Crypto>()
                             for(crypto in cryptoList!!){
                                 val cryptoUser = Crypto()
                                 cryptoUser.apply {
                                     name = crypto.name
-                                    available = crypto.available
+                                    available = 0
                                     imageUrl = crypto.imageUrl
                                     userCryptoList.add(cryptoUser)
                                 }
                             }
 
                             // Add list to database
-                            user!!.cryptoList = userCryptoList
+                            user!!.cryptosList = userCryptoList
                             firestoreService.updateUser(user!!, null)
                         }
 
-                        Utils().printLog(TAG, "loadCryptos: cryptoList = ${user?.cryptoList ?: "NULL"}")
+                        Utils().printLog(TAG, "loadCryptos: cryptoList = ${user?.cryptosList ?: "NULL"}")
                         loadUserCryptos()
                         addRealtimeDatabaseListener(user!!, cryptoList!!)
                     }
@@ -145,9 +145,9 @@ class TraderActivity : AppCompatActivity(), CryptosAdapterListener {
 
     private fun loadUserCryptos(){
         runOnUiThread{
-            if(user != null && user!!.cryptoList != null){
+            if(user != null && user!!.cryptosList != null){
                 binding.infoPanel.removeAllViews()
-                for(crypto in user!!.cryptoList!!){
+                for(crypto in user!!.cryptosList!!){
                     addUserCryptoInfoRow(crypto)
                 }
             }
@@ -180,7 +180,7 @@ class TraderActivity : AppCompatActivity(), CryptosAdapterListener {
 
     override fun onBuyCryptoClicked(crypto: Crypto) {
         if(crypto.available > 0){
-            for(userCrypto in user!!.cryptoList!!){
+            for(userCrypto in user!!.cryptosList!!){
                 if(userCrypto.name == crypto.name){
                     userCrypto.available += 1
                     break
